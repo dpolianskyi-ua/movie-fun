@@ -1,0 +1,1 @@
+create table album_scheduler_task ( app_name varchar(255) primary key, started_at timestamp null default null);

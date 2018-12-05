@@ -2,6 +2,7 @@ package org.superbiz.moviefun.albums;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -22,17 +23,26 @@ public class AlbumsUpdateScheduler {
         this.albumsUpdater = albumsUpdater;
     }
 
+    @Autowired
+    private AlbumSchedulerTaskBean albumSchedulerTaskBean;
 
     @Scheduled(initialDelay = 15 * SECONDS, fixedRate = 2 * MINUTES)
     public void run() {
         try {
-            logger.debug("Starting albums update");
-            albumsUpdater.update();
+            if (albumSchedulerTaskBean.addRunEntry()) {
+                try {
+                    logger.debug("Starting albums update");
+                    albumsUpdater.update();
 
-            logger.debug("Finished albums update");
+                    logger.debug("Finished albums update");
 
+                } catch (Throwable e) {
+                    albumSchedulerTaskBean.cleanUpAppName();
+                    logger.error("Error while updating albums; cleaned up run flag", e);
+                }
+            }
         } catch (Throwable e) {
-            logger.error("Error while updating albums", e);
+            // transactional exception
         }
     }
 }
