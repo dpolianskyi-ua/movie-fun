@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import static com.amazonaws.util.IOUtils.toByteArray;
 import static java.lang.String.format;
-import static org.apache.tika.io.IOUtils.toByteArray;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 
 @Controller
@@ -60,14 +60,16 @@ public class AlbumsController {
         Blob blob = blobStore.get(getCoverBlobName(albumId))
                 .orElseGet(this::getDefaultCoverBlob);
 
-        return new HttpEntity<>(toByteArray(blob.inputStream), getBlobHttpHeaders(blob));
+        byte[] byteArray = toByteArray(blob.inputStream);
+
+        return new HttpEntity<>(byteArray, getBlobHttpHeaders(blob, byteArray));
     }
 
-    private HttpHeaders getBlobHttpHeaders(Blob blob) throws IOException {
+    private HttpHeaders getBlobHttpHeaders(Blob blob, byte[] byteArray) throws IOException {
         HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(MediaType.parseMediaType(blob.contentType));
-        headers.setContentLength(toByteArray(blob.inputStream).length);
+        headers.setContentLength(byteArray.length);
 
         return headers;
     }
