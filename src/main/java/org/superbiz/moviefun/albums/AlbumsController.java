@@ -75,8 +75,8 @@ public class AlbumsController {
     }
 
     private Blob getDefaultCoverBlob() {
-        return new Blob("default",
-                getClass().getClassLoader().getResourceAsStream("default.jpg"),
+        return new Blob("default-cover",
+                getClass().getClassLoader().getResourceAsStream("default-cover.jpg"),
                 IMAGE_JPEG_VALUE);
     }
 
