@@ -1,1 +1,5 @@
-create table album_scheduler_task ( app_name varchar(255) primary key, started_at timestamp null default null);
+drop table if exists album_scheduler_task;
+
+create table album_scheduler_task (started_at timestamp null default null);
+
+insert into album_scheduler_task (started_at) values (null);

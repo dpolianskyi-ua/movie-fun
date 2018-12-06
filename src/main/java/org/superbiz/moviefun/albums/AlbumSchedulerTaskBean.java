@@ -2,31 +2,26 @@ package org.superbiz.moviefun.albums;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @Repository
 public class AlbumSchedulerTaskBean {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    @Transactional
-    public Boolean addRunEntry() {
-        try {
-            return (entityManager.createNativeQuery("INSERT INTO album_scheduler_task (app_name, started_at) VALUES ('moviefun', now())").executeUpdate() > 0) ? Boolean.TRUE : Boolean.FALSE;
-        } catch (Exception ex) {
-            return Boolean.FALSE;
-        }
-    }
+    public boolean startTask() {
+        int updatedRows = jdbcTemplate.update(
+                "UPDATE album_scheduler_task" +
+                        " SET started_at = now()" +
+                        " WHERE started_at IS NULL" +
+                        " OR started_at < date_sub(now(), INTERVAL 2 MINUTE)"
+        );
 
-    @Transactional
-    public void cleanUpAppName() {
-        int count = entityManager.createNativeQuery("DELETE FROM album_scheduler_task WHERE app_name = 'moviefun'").executeUpdate();
+        return updatedRows > 0;
     }
 }

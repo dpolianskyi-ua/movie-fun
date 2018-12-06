@@ -29,20 +29,18 @@ public class AlbumsUpdateScheduler {
     @Scheduled(initialDelay = 15 * SECONDS, fixedRate = 2 * MINUTES)
     public void run() {
         try {
-            if (albumSchedulerTaskBean.addRunEntry()) {
-                try {
-                    logger.debug("Starting albums update");
-                    albumsUpdater.update();
+            if (albumSchedulerTaskBean.startTask()) {
+                logger.debug("Starting albums update");
 
-                    logger.debug("Finished albums update");
+                albumsUpdater.update();
 
-                } catch (Throwable e) {
-                    albumSchedulerTaskBean.cleanUpAppName();
-                    logger.error("Error while updating albums; cleaned up run flag", e);
-                }
+                logger.debug("Finished albums update");
+            } else {
+                logger.debug("Nothing to start");
             }
+
         } catch (Throwable e) {
-            // transactional exception
+            logger.error("Error while updating albums", e);
         }
     }
 }
